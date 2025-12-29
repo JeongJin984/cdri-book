@@ -1,0 +1,9 @@
+spring:
+  application:
+    name : cdri-book
+  datasource:
+    cdri-books:
+      hikari:
+        jdbc-url: jdbc:mysql://localhost:3306/cdri_books
+        username: root
+        password: pass
