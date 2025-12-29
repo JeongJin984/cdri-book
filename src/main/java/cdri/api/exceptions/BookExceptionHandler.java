@@ -9,6 +9,7 @@ import cdri.common.response.ExceptionResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,10 +44,22 @@ public class BookExceptionHandler {
         return ResponseEntity.badRequest().body(new ExceptionResponse(ResponseCode.INVALID_REQUEST));
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        log.info("method argument validation failed: {}", e.getMessage());
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ResponseCode.INVALID_REQUEST));
+    }
+
     @ExceptionHandler(InvalidCursorException.class)
     public ResponseEntity<ExceptionResponse> handleInvalidCursorException(Exception e) {
         log.info("Invalid cursor: {}", e.getMessage());
 
         return ResponseEntity.badRequest().body(new ExceptionResponse(ResponseCode.INVALID_CURSOR));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ExceptionResponse> handleException(Exception e) {
+        log.error("Exception: {}", e.getMessage());
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ResponseCode.UNKNOWN));
     }
 }
