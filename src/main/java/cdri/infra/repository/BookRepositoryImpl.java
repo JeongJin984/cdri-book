@@ -1,12 +1,10 @@
 package cdri.infra.repository;
 
-import cdri.domain.dto.command.BookSearchCommand;
+import cdri.domain.dto.command.BookSearchCmd;
 import cdri.domain.repository.BookRepository;
 import cdri.infra.converter.bb.BookSearchPredicate;
 import cdri.infra.entity.BookJpaEntity;
 import cdri.infra.repository.adaptor.BookJpaRepository;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -24,7 +22,7 @@ public class BookRepositoryImpl implements BookRepository {
     private final BookJpaRepository bookJpaRepository;
 
     @Override
-    public List<BookJpaEntity> findSliceWithCategoryByCommandKeyset(BookSearchCommand command, int size) {
+    public List<BookJpaEntity> findSliceWithCategoryByCommandKeyset(BookSearchCmd command, int size) {
         return queryFactory
             .selectFrom(bookJpaEntity)
             .join(bookJpaEntity.category, categoryJpaEntity).fetchJoin()

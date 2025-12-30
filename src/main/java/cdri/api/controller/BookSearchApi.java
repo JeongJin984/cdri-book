@@ -3,20 +3,18 @@ package cdri.api.controller;
 import cdri.api.response.BookSearchRes;
 import cdri.common.exception.InvalidCursorException;
 import cdri.common.response.PaginationResponse;
-import cdri.domain.dto.command.BookSearchCommand;
+import cdri.domain.dto.command.BookSearchCmd;
 import cdri.domain.dto.result.BookSearchResult;
 import cdri.domain.service.BookSearchService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -44,10 +42,10 @@ public class BookSearchApi {
 
         @RequestParam(name = "size", required = false, defaultValue = "10") @Min(1) @Max(100) int size
     ) {
-        BookSearchCommand.BookCursor cursor = parseCursor(cursorCreatedAt, cursorBookId);
+        BookSearchCmd.BookCursor cursor = parseCursor(cursorCreatedAt, cursorBookId);
 
         List<BookSearchResult> fetched = bookSearchService.searchBooks(
-            new BookSearchCommand(bookName, categoryId, authorName, canBorrow, cursor),
+            new BookSearchCmd(bookName, categoryId, authorName, canBorrow, cursor),
             size + 1
         );
 
@@ -56,23 +54,24 @@ public class BookSearchApi {
 
         PaginationResponse.NextCursor nextCursor = items.isEmpty()
             ? null
-            : new PaginationResponse.NextCursor(items.getLast().createdAt(),
-            items.getLast().bookId());
+            : new PaginationResponse.NextCursor(items.getLast().book().createdAt(),
+            items.getLast().book().bookId());
 
         return new PaginationResponse<>(
             items.stream().map(v -> new BookSearchRes(
-                v.categoryName(),
-                v.bookId(),
-                v.bookTitle(),
-                v.authorName(),
-                v.createdAt()
+                v.category().categoryId(),
+                v.category().categoryName(),
+                v.book().bookId(),
+                v.book().bookTitle(),
+                v.book().authorName(),
+                v.book().createdAt()
             )).toList(),
             nextCursor,
             hasNext
         );
     }
 
-    private BookSearchCommand.BookCursor parseCursor(LocalDateTime cursorCreatedAt, Long cursorBookId) {
+    private BookSearchCmd.BookCursor parseCursor(LocalDateTime cursorCreatedAt, Long cursorBookId) {
         boolean hasAt = cursorCreatedAt != null;
         boolean hasId = cursorBookId != null;
 
@@ -83,6 +82,6 @@ public class BookSearchApi {
         if (hasAt != hasId) { // XOR
             throw new InvalidCursorException("cursorCreatedAt and cursorBookId must be both present or both absent.");
         }
-        return hasAt ? new BookSearchCommand.BookCursor(cursorCreatedAt, cursorBookId) : null;
+        return hasAt ? new BookSearchCmd.BookCursor(cursorCreatedAt, cursorBookId) : null;
     }
 }

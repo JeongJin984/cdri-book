@@ -3,10 +3,11 @@ package cdri.api.response;
 import java.time.LocalDateTime;
 
 public record BookSearchRes (
-    String category,
+    Long categoryId,
+    String categoryName,
     Long bookId,
-    String title,
-    String author,
-    LocalDateTime createdAt
+    String bookTitle,
+    String bookAuthor,
+    LocalDateTime bookCreatedAt
 ) {
 }

@@ -27,6 +27,7 @@ public class CategoryJpaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
+    @Getter
     private Long categoryId;
 
     @Getter
@@ -41,6 +42,7 @@ public class CategoryJpaEntity {
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private final List<BookJpaEntity> books = new ArrayList<>();
 
+    @Getter
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

@@ -5,12 +5,20 @@ import cdri.common.enums.BookStatus;
 import java.time.LocalDateTime;
 
 public record BookSearchResult (
-    String categoryName,
-    Long bookId,
-    String bookTitle,
-    String authorName,
-    BookStatus status,
-    LocalDateTime createdAt
+    BookCategory category,
+    Book book
 ) {
+    public record BookCategory (
+        Long categoryId,
+        String categoryName,
+        LocalDateTime createdAt
+    ) {}
 
+    public record Book(
+        Long bookId,
+        String bookTitle,
+        String authorName,
+        BookStatus status,
+        LocalDateTime createdAt
+    ) {}
 }

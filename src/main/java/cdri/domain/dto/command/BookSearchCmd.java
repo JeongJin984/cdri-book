@@ -1,11 +1,8 @@
 package cdri.domain.dto.command;
 
-import cdri.common.enums.BookStatus;
-
 import java.time.LocalDateTime;
-import java.util.List;
 
-public record BookSearchCommand (
+public record BookSearchCmd(
     String bookName,
     Long categoryId,
     String authorName,

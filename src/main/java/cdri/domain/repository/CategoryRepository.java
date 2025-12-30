@@ -7,5 +7,6 @@ import java.util.Optional;
 
 @Repository
 public interface CategoryRepository {
-    Optional<CategoryJpaEntity> findByName(String name);
+    Optional<CategoryJpaEntity> findById(Long id);
+
 }

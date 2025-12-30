@@ -1,6 +1,6 @@
 package cdri.domain.service;
 
-import cdri.domain.dto.command.BookSearchCommand;
+import cdri.domain.dto.command.BookSearchCmd;
 import cdri.domain.dto.result.BookSearchResult;
 import cdri.domain.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,15 +13,21 @@ import java.util.List;
 public class BookSearchService {
     private final BookRepository bookRepository;
 
-    public List<BookSearchResult> searchBooks(BookSearchCommand command, int size) {
+    public List<BookSearchResult> searchBooks(BookSearchCmd command, int size) {
         return bookRepository.findSliceWithCategoryByCommandKeyset(command, size).stream()
             .map(v -> new BookSearchResult(
-                v.getCategory().getName(),
-                v.getBookId(),
-                v.getTitle(),
-                v.getAuthor(),
-                v.getStatus(),
-                v.getCreatedAt()
+                new BookSearchResult.BookCategory(
+                    v.getCategory().getCategoryId(),
+                    v.getCategory().getName(),
+                    v.getCategory().getCreatedAt()
+                ),
+                new BookSearchResult.Book(
+                    v.getBookId(),
+                    v.getTitle(),
+                    v.getAuthor(),
+                    v.getStatus(),
+                    v.getCreatedAt()
+                )
             )).toList();
     }
 }
