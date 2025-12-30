@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: cdri-books-db
+    ports:
+      - "53306:3306"
+    environment:
+      MYSQL_DATABASE: cdri_books
+      MYSQL_ROOT_PASSWORD: pass
+    volumes:
+      - ../mysql/ddl.sql:/docker-entrypoint-initdb.d/1-ddl.sql:ro
+      - ../mysql/book_data_init.sql:/docker-entrypoint-initdb.d/2-book_data_init.sql:ro
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --init-connect=SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -ppass --silent"]
+      interval: 3s
+      timeout: 2s
+      retries: 30
+      start_period: 20s
+
+  app:
+    image: cdri-book:latest
+    container_name: cdri-book-app
+    ports:
+      - "8888:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_CDRI_BOOKS_HIKARI_JDBC_URL: "jdbc:mysql://db:3306/cdri_books?useUnicode=true&characterEncoding=utf8&connectionCollation=utf8mb4_unicode_ci&sessionVariables=character_set_client=utf8mb4,character_set_connection=utf8mb4,character_set_results=utf8mb4,collation_connection=utf8mb4_unicode_ci"
+      SPRING_DATASOURCE_CDRI_BOOKS_HIKARI_USERNAME: root
+      SPRING_DATASOURCE_CDRI_BOOKS_HIKARI_PASSWORD: pass
+    restart: unless-stopped
