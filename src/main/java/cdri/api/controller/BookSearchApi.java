@@ -88,10 +88,10 @@ public class BookSearchApi {
         boolean hasNext = fetched.size() > size;
         List<BookSearchResult> items = hasNext ? fetched.subList(0, size) : fetched;
 
-        PaginationResponse.NextCursor nextCursor = items.isEmpty()
-            ? null
-            : new PaginationResponse.NextCursor(items.getLast().book().createdAt(),
-            items.getLast().book().bookId());
+        PaginationResponse.NextCursor nextCursor = hasNext
+            ? new PaginationResponse.NextCursor(
+                items.getLast().book().createdAt(), items.getLast().book().bookId())
+            : null;
 
         return new PaginationResponse<>(
             items.stream().map(v -> new BookSearchRes(
