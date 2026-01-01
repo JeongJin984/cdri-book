@@ -1,10 +1,7 @@
 package cdri.api.exceptions;
 
 import cdri.common.enums.ResponseCode;
-import cdri.common.exception.InvalidCursorException;
-import cdri.common.exception.InvalidPageSizeException;
-import cdri.common.exception.NoSuchBookException;
-import cdri.common.exception.NoSuchCategoryException;
+import cdri.common.exception.*;
 import cdri.common.response.ExceptionResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +52,12 @@ public class BookExceptionHandler {
         log.info("Invalid cursor: {}", e.getMessage());
 
         return ResponseEntity.badRequest().body(new ExceptionResponse(ResponseCode.INVALID_CURSOR));
+    }
+
+    @ExceptionHandler(BookNeedsCategoryException.class)
+    public ResponseEntity<ExceptionResponse> handleBookNeedsCategoryException(Exception e) {
+        log.info("Book needs category: {}", e.getMessage());
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ResponseCode.INVALID_REQUEST));
     }
 
     @ExceptionHandler(Exception.class)

@@ -1,6 +1,7 @@
 package cdri.infra.entity;
 
 import cdri.common.enums.BookStatus;
+import cdri.common.exception.BookNeedsCategoryException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,6 +14,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(
@@ -60,10 +62,12 @@ public class BookJpaEntity {
     }
 
     public static BookJpaEntity of(String title, String author, BookStatus status, CategoryJpaEntity category) {
+        if(category == null) throw new BookNeedsCategoryException("category must not be null");
         return new BookJpaEntity(title, author, status, category);
     }
 
     public void changeCategory(CategoryJpaEntity category) {
+        if(category == null) throw new BookNeedsCategoryException("category must not be null");
         this.category = category;
     }
 }
