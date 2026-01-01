@@ -5,4 +5,4 @@ cd /d %~dp0
 
 rem Stop environment
 echo Stopping environment...
-docker-compose down -v
+docker compose down -v

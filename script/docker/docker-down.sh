@@ -5,4 +5,4 @@ cd "$(dirname "$0")" || exit
 
 # Stop environment
 echo "Stopping environment..."
-docker-compose down -v
+docker compose down -v

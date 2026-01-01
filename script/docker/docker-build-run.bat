@@ -10,4 +10,4 @@ docker build -t cdri-book .
 rem Start environment
 echo Starting environment...
 cd /d %~dp0\..\docker
-docker-compose up -d
+docker compose up -d
