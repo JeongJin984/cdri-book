@@ -5,7 +5,7 @@ services:
     image: mysql:8.0
     container_name: cdri-books-db
     ports:
-      - "53306:3306"
+      - "63306:3306"
     environment:
       MYSQL_DATABASE: cdri_books
       MYSQL_ROOT_PASSWORD: pass
