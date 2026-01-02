@@ -6,14 +6,13 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.UpdateTimestamp;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Entity
@@ -53,7 +52,8 @@ public class BookJpaEntity {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private final LinkedHashSet<BookCategoryMapJpaEntity> categories = new LinkedHashSet<>();
+    @Setter(AccessLevel.PROTECTED)
+    private Set<BookCategoryMapJpaEntity> categories = new LinkedHashSet<>();
 
     protected BookJpaEntity(String title, String author, BookStatus status) {
         this.title = title;
@@ -64,28 +64,34 @@ public class BookJpaEntity {
     public static BookJpaEntity of(String title, String author, BookStatus status, List<CategoryJpaEntity> categories) {
         if(categories == null || categories.isEmpty()) throw new NoBookCategoryException("category must not be null");
         BookJpaEntity book = new BookJpaEntity(title, author, status);
-        book.addAllCategories(categories);
+        book.syncCategories(categories);
         return book;
     }
 
-    public void addAllCategories(List<CategoryJpaEntity> categories) {
+    public void syncCategories(List<CategoryJpaEntity> categories) {
         if (categories == null || categories.isEmpty())
             throw new NoBookCategoryException("category must not be null");
 
-        // 기존에 이미 연결된 categoryId들
-        Set<Long> existing = this.categories.stream()
-            .map(m -> m.getCategory().getCategoryId())
-            .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
-
-        // 새로 들어온 것 중, existing에 없는 것만 추가
+        Set<Long> targetIds = new HashSet<>();
         for (CategoryJpaEntity c : categories) {
-            if (c == null) continue;
-
+            if (c == null) throw new NoBookCategoryException("category must not be null");
             Long id = c.getCategoryId();
             if (id == null) throw new IllegalStateException("Category must be persisted before adding to Book");
+            targetIds.add(id);
+        }
 
-            if (existing.add(id)) { // add가 true면 "원래 없던 id"라는 뜻
+        // 1) 제거: target에 없는 기존 매핑 제거 (orphanRemoval=true => delete 발생)
+        this.categories.removeIf(m -> !targetIds.contains(m.getCategory().getCategoryId()));
+
+        // 2) 추가: 이미 남아있는 것 제외하고 추가
+        Set<Long> existingIds = this.categories.stream()
+            .map(m -> m.getCategory().getCategoryId())
+            .collect(Collectors.toSet());
+
+        for (CategoryJpaEntity c : categories) {
+            if (c == null) throw new NoBookCategoryException("category must not be null");
+            Long id = c.getCategoryId();
+            if (existingIds.add(id)) {
                 this.categories.add(BookCategoryMapJpaEntity.of(this, c));
             }
         }
@@ -93,7 +99,6 @@ public class BookJpaEntity {
 
     public void changeCategory(List<CategoryJpaEntity> categories) {
         if(categories == null || categories.isEmpty()) throw new NoBookCategoryException("category must not be null");
-        this.categories.clear();
-        addAllCategories(categories);
+        syncCategories(categories);
     }
 }

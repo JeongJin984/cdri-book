@@ -37,7 +37,7 @@ public class BookCategoryMapJpaEntity {
     @JoinColumn(name = "category_id", nullable = false, updatable = false)
     private CategoryJpaEntity category;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false, updatable = false)
     @CreatedDate
     private LocalDateTime createdAt;
 

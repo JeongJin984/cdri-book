@@ -54,4 +54,6 @@ public class CategoryJpaEntity {
     public static CategoryJpaEntity of(String name, CategoryStatus status) {
         return new CategoryJpaEntity(name, status);
     }
+
+
 }

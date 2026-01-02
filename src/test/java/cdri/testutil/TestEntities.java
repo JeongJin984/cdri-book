@@ -12,17 +12,21 @@ import java.util.List;
 public final class TestEntities {
     private TestEntities() {}
 
+    private static final LocalDateTime FIXED_TIME = LocalDateTime.of(2025, 1, 1, 0, 0);
+
     public static CategoryJpaEntity category(long id, String name) {
         CategoryJpaEntity c = CategoryJpaEntity.of(name, CategoryStatus.OK);
         set(c, "categoryId", id);
-        set(c, "createdAt", LocalDateTime.of(2025, 1, 1, 0, 0));
+        set(c, "createdAt", FIXED_TIME);
+        set(c, "updatedAt", FIXED_TIME);
         return c;
     }
 
     public static BookJpaEntity book(long id, String title, String author, List<CategoryJpaEntity> category) {
         BookJpaEntity b = BookJpaEntity.of(title, author, BookStatus.OK, category);
         set(b, "bookId", id);
-        set(b, "createdAt", LocalDateTime.of(2025, 1, 1, 0, 0));
+        set(b, "createdAt", FIXED_TIME);
+        set(b, "updatedAt", FIXED_TIME);
         return b;
     }
 

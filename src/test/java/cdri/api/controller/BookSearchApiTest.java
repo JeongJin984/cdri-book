@@ -22,6 +22,7 @@ import static cdri.common.enums.ResponseCode.INVALID_CURSOR;
 import static cdri.common.enums.ResponseCode.INVALID_REQUEST;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -29,6 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(BookSearchApi.class)
 @Import(BookSearchApiTest.TestClockConfig.class)
 class BookSearchApiTest {
+
+    private static final LocalDateTime FIXED_NOW = LocalDateTime.of(2026, 1, 1, 12, 0);
 
     @Autowired
     private MockMvc mockMvc;
@@ -47,9 +50,8 @@ class BookSearchApiTest {
     @DisplayName("책 검색 API 성공")
     void searchBooks_success() throws Exception {
         // given
-        LocalDateTime now = LocalDateTime.now(Clock.fixed(Instant.parse("2026-01-01T12:00:00Z"), ZoneId.of("UTC")));
-        BookSearchResult.BookCategory category = new BookSearchResult.BookCategory(1L, "IT", now);
-        BookSearchResult.Book book = new BookSearchResult.Book(1L, "Spring", "Author", BookStatus.OK, now);
+        BookSearchResult.BookCategory category = new BookSearchResult.BookCategory(1L, "IT", FIXED_NOW);
+        BookSearchResult.Book book = new BookSearchResult.Book(1L, "Spring", "Author", BookStatus.OK, FIXED_NOW);
         BookSearchResult result = new BookSearchResult(List.of(category), book);
 
         given(bookSearchService.searchBooks(any(), anyInt())).willReturn(List.of(result));
@@ -63,6 +65,21 @@ class BookSearchApiTest {
             .andExpect(jsonPath("$.items[0].bookTitle").value("Spring"))
             .andExpect(jsonPath("$.items[0].categories[0].categoryName").value("IT"))
             .andExpect(jsonPath("$.hasNext").value(false));
+    }
+
+    @Test
+    @DisplayName("size 미지정 시 기본값 10이 적용되어 서비스에 size + 1인 11이 전달된다")
+    void searchBooks_defaultSize() throws Exception {
+        // given
+        given(bookSearchService.searchBooks(any(), eq(11))).willReturn(List.of());
+
+        // when
+        mockMvc.perform(get("/api/v1/books")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        // then
+        verify(bookSearchService).searchBooks(any(), eq(11));
     }
 
     @Test
@@ -92,18 +109,6 @@ class BookSearchApiTest {
     }
 
     @Test
-    @DisplayName("size 미지정 시 기본값 10이 적용되어 서비스에 size + 1인 11이 전달된다")
-    void searchBooks_defaultSize() throws Exception {
-        // given
-        given(bookSearchService.searchBooks(any(), eq(11))).willReturn(List.of());
-
-        // when & then
-        mockMvc.perform(get("/api/v1/books")
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-    }
-
-    @Test
     @DisplayName("cursorCreatedAt 포맷이 잘못되었을 때 400 에러")
     void searchBooks_invalidCursorFormat() throws Exception {
         // when & then
@@ -125,6 +130,9 @@ class BookSearchApiTest {
                 .param("bookName", "")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
+
+        // then (현재 스펙대로라면 호출 검증을 추가하는 게 테스트 가치가 큼)
+        verify(bookSearchService).searchBooks(any(), anyInt());
     }
 
     @Test

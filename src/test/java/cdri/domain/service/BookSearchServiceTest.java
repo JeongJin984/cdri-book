@@ -49,7 +49,7 @@ class BookSearchServiceTest {
 
         // then
         assertThat(results).hasSize(1);
-        assertThat(results.get(0).book().bookTitle()).isEqualTo("Spring");
+        assertThat(results.getFirst().book().bookTitle()).isEqualTo("Spring");
     }
 
     @Test
