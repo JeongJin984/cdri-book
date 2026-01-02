@@ -95,8 +95,9 @@ public class BookSearchApi {
 
         return new PaginationResponse<>(
             items.stream().map(v -> new BookSearchRes(
-                v.category().categoryId(),
-                v.category().categoryName(),
+                v.categories().stream()
+                    .map(c -> new BookSearchRes.Category(c.categoryId(), c.categoryName()))
+                    .toList(),
                 v.book().bookId(),
                 v.book().bookTitle(),
                 v.book().authorName(),

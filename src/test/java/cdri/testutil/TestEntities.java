@@ -7,6 +7,7 @@ import cdri.infra.entity.CategoryJpaEntity;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public final class TestEntities {
     private TestEntities() {}
@@ -18,7 +19,7 @@ public final class TestEntities {
         return c;
     }
 
-    public static BookJpaEntity book(long id, String title, String author, CategoryJpaEntity category) {
+    public static BookJpaEntity book(long id, String title, String author, List<CategoryJpaEntity> category) {
         BookJpaEntity b = BookJpaEntity.of(title, author, BookStatus.OK, category);
         set(b, "bookId", id);
         set(b, "createdAt", LocalDateTime.of(2025, 1, 1, 0, 0));

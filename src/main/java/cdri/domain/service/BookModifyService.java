@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,17 +27,19 @@ public class BookModifyService {
         BookJpaEntity book = bookRepository.findById(bookId)
             .orElseThrow(() -> new NoSuchBookException("No book found with id: " + bookId));
 
-        CategoryJpaEntity category = categoryRepository.findById(cmd.categoryId())
-            .orElseThrow(() -> new NoSuchCategoryException("No category found with id: " + cmd.categoryId()));
+        List<CategoryJpaEntity> category = categoryRepository.findAllByIds(cmd.categoryId());
+
+        if(category.size() != cmd.categoryId().size()) throw new NoSuchCategoryException("No category found with id: " + cmd.categoryId());
 
         book.changeCategory(category);
 
         return new CategoryModifyResult(
-            new CategoryModifyResult.BookCategory(
-                book.getCategory().getCategoryId(),
-                book.getCategory().getName(),
-                book.getCategory().getCreatedAt()
-            ),
+            book.getCategories().stream()
+                .map(c -> new CategoryModifyResult.BookCategory(
+                    c.getCategory().getCategoryId(),
+                    c.getCategory().getName(),
+                    c.getCategory().getCreatedAt()
+                )).toList(),
             new CategoryModifyResult.Book(
                 book.getBookId(),
                 book.getTitle(),

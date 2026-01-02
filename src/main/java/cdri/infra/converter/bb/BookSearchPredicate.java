@@ -3,8 +3,10 @@ package cdri.infra.converter.bb;
 import cdri.common.enums.BookStatus;
 import cdri.domain.dto.command.BookSearchCmd;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import lombok.NoArgsConstructor;
 
+import static cdri.infra.entity.QBookCategoryMapJpaEntity.bookCategoryMapJpaEntity;
 import static cdri.infra.entity.QBookJpaEntity.bookJpaEntity;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
@@ -24,7 +26,16 @@ public class BookSearchPredicate {
     }
 
     private static BooleanExpression byCategoryId(BookSearchCmd command) {
-        return command.categoryId() == null ? null : bookJpaEntity.category.categoryId.eq(command.categoryId());
+        if (command.categoryId() == null) return null;
+
+        return JPAExpressions
+            .selectOne()
+            .from(bookCategoryMapJpaEntity)
+            .where(
+                bookCategoryMapJpaEntity.book.bookId.eq(bookJpaEntity.bookId),
+                bookCategoryMapJpaEntity.category.categoryId.eq(command.categoryId())
+            )
+            .exists();
     }
 
     private static BooleanExpression byAuthorName(BookSearchCmd command) {

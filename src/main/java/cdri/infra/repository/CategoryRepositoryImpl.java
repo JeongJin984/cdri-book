@@ -6,6 +6,7 @@ import cdri.infra.repository.adaptor.CategoryJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -16,5 +17,10 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     @Override
     public Optional<CategoryJpaEntity> findById(Long id) {
         return categoryJpaRepository.findById(id);
+    }
+
+    @Override
+    public List<CategoryJpaEntity> findAllByIds(List<Long> ids) {
+        return categoryJpaRepository.findAllById(ids);
     }
 }

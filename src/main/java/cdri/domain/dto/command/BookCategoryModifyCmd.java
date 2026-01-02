@@ -1,6 +1,8 @@
 package cdri.domain.dto.command;
 
+import java.util.List;
+
 public record BookCategoryModifyCmd (
-    Long categoryId
+    List<Long> categoryId
 ) {
 }

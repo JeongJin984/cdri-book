@@ -56,8 +56,9 @@ public class BookModifyApi {
         );
 
         return new BookModifyRes(
-            modifyResult.category().categoryId(),
-            modifyResult.category().categoryName(),
+            modifyResult.categories().stream()
+                .map(c -> new BookModifyRes.Category(c.categoryId(), c.categoryName()))
+                .toList(),
             modifyResult.book().bookId(),
             modifyResult.book().bookTitle(),
             modifyResult.book().authorName(),

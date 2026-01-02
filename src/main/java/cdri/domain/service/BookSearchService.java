@@ -14,20 +14,6 @@ public class BookSearchService {
     private final BookRepository bookRepository;
 
     public List<BookSearchResult> searchBooks(BookSearchCmd command, int size) {
-        return bookRepository.findSliceWithCategoryByCommandKeyset(command, size).stream()
-            .map(v -> new BookSearchResult(
-                new BookSearchResult.BookCategory(
-                    v.getCategory().getCategoryId(),
-                    v.getCategory().getName(),
-                    v.getCategory().getCreatedAt()
-                ),
-                new BookSearchResult.Book(
-                    v.getBookId(),
-                    v.getTitle(),
-                    v.getAuthor(),
-                    v.getStatus(),
-                    v.getCreatedAt()
-                )
-            )).toList();
+        return bookRepository.findSliceWithCategoryByCommandKeyset(command, size);
     }
 }

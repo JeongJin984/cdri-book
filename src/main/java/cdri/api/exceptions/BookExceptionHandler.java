@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.server.ResponseStatusException;
 
 @ControllerAdvice(annotations = RestController.class)
 @Slf4j
@@ -54,7 +53,7 @@ public class BookExceptionHandler {
         return ResponseEntity.badRequest().body(new ExceptionResponse(ResponseCode.INVALID_CURSOR));
     }
 
-    @ExceptionHandler(BookNeedsCategoryException.class)
+    @ExceptionHandler(NoBookCategoryException.class)
     public ResponseEntity<ExceptionResponse> handleBookNeedsCategoryException(Exception e) {
         log.info("Book needs category: {}", e.getMessage());
         return ResponseEntity.badRequest().body(new ExceptionResponse(ResponseCode.INVALID_REQUEST));

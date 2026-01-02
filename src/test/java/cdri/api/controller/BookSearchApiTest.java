@@ -20,8 +20,7 @@ import java.util.List;
 
 import static cdri.common.enums.ResponseCode.INVALID_CURSOR;
 import static cdri.common.enums.ResponseCode.INVALID_REQUEST;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -51,7 +50,7 @@ class BookSearchApiTest {
         LocalDateTime now = LocalDateTime.now(Clock.fixed(Instant.parse("2026-01-01T12:00:00Z"), ZoneId.of("UTC")));
         BookSearchResult.BookCategory category = new BookSearchResult.BookCategory(1L, "IT", now);
         BookSearchResult.Book book = new BookSearchResult.Book(1L, "Spring", "Author", BookStatus.OK, now);
-        BookSearchResult result = new BookSearchResult(category, book);
+        BookSearchResult result = new BookSearchResult(List.of(category), book);
 
         given(bookSearchService.searchBooks(any(), anyInt())).willReturn(List.of(result));
 
@@ -62,6 +61,7 @@ class BookSearchApiTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items").isArray())
             .andExpect(jsonPath("$.items[0].bookTitle").value("Spring"))
+            .andExpect(jsonPath("$.items[0].categories[0].categoryName").value("IT"))
             .andExpect(jsonPath("$.hasNext").value(false));
     }
 
@@ -89,6 +89,42 @@ class BookSearchApiTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.errCode").value(INVALID_CURSOR.name()));
+    }
+
+    @Test
+    @DisplayName("size 미지정 시 기본값 10이 적용되어 서비스에 size + 1인 11이 전달된다")
+    void searchBooks_defaultSize() throws Exception {
+        // given
+        given(bookSearchService.searchBooks(any(), eq(11))).willReturn(List.of());
+
+        // when & then
+        mockMvc.perform(get("/api/v1/books")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("cursorCreatedAt 포맷이 잘못되었을 때 400 에러")
+    void searchBooks_invalidCursorFormat() throws Exception {
+        // when & then
+        mockMvc.perform(get("/api/v1/books")
+                .param("cursorCreatedAt", "2026/01/01")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.errCode").value(INVALID_REQUEST.name()));
+    }
+
+    @Test
+    @DisplayName("bookName이 빈 문자열일 때 400 에러 또는 전체 조회(현재는 서비스에 빈 문자열 전달)")
+    void searchBooks_emptyBookName() throws Exception {
+        // given
+        given(bookSearchService.searchBooks(any(), anyInt())).willReturn(List.of());
+
+        // when & then
+        mockMvc.perform(get("/api/v1/books")
+                .param("bookName", "")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
     }
 
     @Test
